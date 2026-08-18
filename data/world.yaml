@@ -1,0 +1,483 @@
+# The world.
+#
+# Every entry is matched on (case, channel, target). The first entry whose
+# `requires` facts are all present wins, so put specific variants first.
+#
+#   lands: 0        same action
+#   lands: 3        arrives when the clock reaches current_day + 3
+#   lands: never    does not arrive
+#   requires:       facts that must already be true
+#   sets:           facts recorded when the result is delivered
+#   documents:      fax only — refs that must be included for this entry to match
+#   schedules:      events queued when this is delivered
+#   after_day: N    entry only matches from day N on (deadlines have consequences)
+#   before_day: N   entry only matches before day N
+
+cases:
+  case-01:
+    patient: Marta Reyes
+    goal: Get Marta's manual wheelchair claim paid, or find out what it actually needs.
+    documents:
+      written-order: "Written order, signed day -30, K0001, Dr. A. Okafor, Sunrise Family Medicine."
+      face-to-face-note: "Face-to-face encounter note dated 04/28, Dr. A. Okafor. Documents mobility limitation, unable to ambulate more than 20 feet, caregiver assists with transfers."
+      supplier-enrollment: "Supplier enrollment attestation, Lakeshore Home Medical, Medicare-enrolled DMEPOS supplier."
+    claims:
+      "8841203":
+        status: |
+          CLAIM 8841203  DOS 2026-05-12  HCPCS K0001  BILLED 312.00  PAID 0.00
+          CO-16   Claim/service lacks information or has submission/billing error(s).
+          N706    Missing documentation.
+          STATUS  FINALIZED — DENIED
+        resubmit:
+          - requires: [supplier_has_documentation]
+            lands: 9
+            result: |
+              CLAIM 8841203-A  DOS 2026-05-12  HCPCS K0001  BILLED 312.00  PAID 249.60
+                      PATIENT RESPONSIBILITY 62.40
+              STATUS  FINALIZED — PAID
+          - lands: 6
+            result: |
+              CLAIM 8841203-B  DOS 2026-05-12  HCPCS K0001  BILLED 312.00  PAID 0.00
+              CO-16   Claim/service lacks information or has submission/billing error(s).
+              N706    Missing documentation.
+              STATUS  FINALIZED — DENIED
+    calls:
+      - to: "(312) 555-0142"
+        party: Lakeshore Home Medical
+        lands: 0
+        outcome: connected
+        sets: [knows_correct_fax_line]
+        transcript: |
+          Rep: Documents line, this is Terrell.
+          You: I'm calling about a denied claim for Marta Reyes — K0001, date of service 5/12. It came back needing documentation.
+          Rep: Let me pull it. Reyes... okay. Yeah, we submitted with what we had, which wasn't the order.
+          You: We faxed the packet on the 29th.
+          Rep: To what number?
+          You: 555-0143.
+          Rep: That's the storefront on Clark. They closed that in March, it just rings into a machine nobody empties. Documents come here, 555-0142.
+          You: So you never had it.
+          Rep: Never had it. Send it to this number and I'll get it corrected and resubmitted same week.
+      - to: "(312) 555-0143"
+        party: Lakeshore Home Medical (Clark St)
+        lands: 0
+        outcome: no_answer
+        transcript: "Rings out. No voicemail greeting, just a tone, then silence."
+      - to: "(312) 555-0198"
+        party: Sunrise Family Medicine
+        lands: 0
+        outcome: connected
+        sets: [knows_order_already_sent]
+        transcript: |
+          Front desk: Sunrise Family Medicine.
+          You: I'm following up on a written order request for Marta Reyes — we faxed on the 14th.
+          Front desk: Hold on... I show Dr. Okafor signed that a while back. It went out to the equipment company on the 30th of last month.
+          You: Day -30?
+          Front desk: That's what it says. Do you want me to send you a copy?
+          You: Please.
+    faxes:
+      - to: "(312) 555-0142"
+        party: Lakeshore Home Medical
+        documents: [written-order, face-to-face-note]
+        lands: 1
+        sets: [supplier_has_documentation]
+        result: "Confirmation of receipt, Lakeshore Home Medical. Documentation packet received for REYES, MARTA. Claim 8841203 will be corrected and resubmitted."
+      - to: "(312) 555-0143"
+        party: Lakeshore Home Medical (Clark St)
+        lands: never
+      - to: "(312) 555-0199"
+        party: Sunrise Family Medicine
+        lands: 1
+        result: |
+          Cover sheet, Sunrise Family Medicine. Re: REYES, MARTA.
+          Written order signed by Dr. A. Okafor and face-to-face encounter note were transmitted to Lakeshore Home Medical on day -30. Copies attached. Please direct further requests to the equipment supplier.
+    texts:
+      - lands: 0
+        reply: "Marta: ok. i dont have any papers here, they kept everything at the office"
+
+  case-02:
+    patient: Harold Nwosu
+    goal: Get Harold's hospital bed claim paid.
+    documents:
+      eligibility-check: |
+        Eligibility check, day -60.
+        MEMBER   NWOSU, HAROLD          DOB 1955-02-11
+        PLAN     Medicare Part B        STATUS ACTIVE
+        EFF      2020-03-01             TERM  —
+      written-order: "Written order, signed day -25, E0260 hospital bed, Dr. K. Mensah."
+    claims:
+      "8839551":
+        status: |
+          CLAIM 8839551  DOS 2026-06-02  HCPCS E0260  BILLED 1,140.00  PAID 0.00
+          CO-27   Expenses incurred after coverage terminated.
+          STATUS  FINALIZED — DENIED
+        resubmit:
+          - requires: [supplier_will_rebill]
+            lands: 7
+            result: |
+              CLAIM 9004117  PAYER 61101 HUMANA GOLD PLUS  DOS 2026-06-02  HCPCS E0260
+              STATUS  ACCEPTED — IN PROCESS
+          - lands: 5
+            result: |
+              CLAIM 8839551-B  DOS 2026-06-02  HCPCS E0260  BILLED 1,140.00  PAID 0.00
+              CO-27   Expenses incurred after coverage terminated.
+              STATUS  FINALIZED — DENIED
+    calls:
+      - to: "(800) 555-0100"
+        party: Medicare provider line
+        lands: 0
+        outcome: connected
+        sets: [knows_part_b_terminated]
+        transcript: |
+          Rep: I'm showing Part B coverage terminated December 31.
+          You: Terminated why?
+          Rep: Beneficiary elected a Medicare Advantage plan. Once that's effective, claims go to the plan, not to us. I can't tell you which plan from here — that'll be on his card.
+      - to: "(800) 555-0288"
+        party: Humana provider services
+        requires: [knows_member_id]
+        lands: 0
+        outcome: connected
+        sets: [knows_new_payer]
+        transcript: |
+          Rep: Provider services, how can I help?
+          You: Verifying eligibility for Harold Nwosu, member H1122334455.
+          Rep: I have him. Humana Gold Plus HMO, effective January 1 this year, active.
+          You: And the E0260 hospital bed, date of service 6/2 — that would fall under this plan?
+          Rep: If the service date is after January 1, yes. That's us, not Original Medicare. Whoever billed it needs to rebill to us. Payer ID 61101.
+      - to: "(800) 555-0288"
+        party: Humana provider services
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: Provider services. Can I have the member ID?
+          You: I don't have it in front of me — I have his name and date of birth.
+          Rep: I can't look up a member without the ID. It's on the front of the card, starts with an H.
+      - to: "(312) 555-0301"
+        party: ChicagoLand Durable Medical
+        requires: [knows_new_payer]
+        lands: 0
+        outcome: connected
+        sets: [supplier_will_rebill]
+        transcript: |
+          Rep: Sure, we can rebill it. Give me the payer ID and the member number and I'll resubmit this week. If it's inside timely filing we're fine, and 6/2 is well inside.
+      - to: "(312) 555-0301"
+        party: ChicagoLand Durable Medical
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: We billed it to Medicare and Medicare said no. If there's another payer, tell me who and give me the member number and I'll rebill. Otherwise there's nothing on our end to fix.
+    texts:
+      - requires: [knows_member_id]
+        lands: 1
+        reply: "Harold: i dont know about any of that. the truck people just brought it and left. did you call the insurance lady"
+      - lands: 1
+        sets: [knows_member_id]
+        reply: "Harold: ok i found it. it says humana gold plus and then H1122334455. is that the one"
+
+  case-03:
+    patient: Yvonne Baptiste
+    goal: Get the prior authorization for Yvonne's power wheelchair decided.
+    documents:
+      pt-evaluation: "Specialty evaluation, physical therapy, mobility, Rush Rehabilitation, day -25. Documents inability to self-propel a manual wheelchair; power mobility recommended for household mobility."
+      written-order: "Written order, signed day -25, K0823 power wheelchair, Dr. L. Farrow."
+      portal-check: |
+        Portal check, day -2.
+        AUTH REF   PA-4471902
+        MEMBER     BAPTISTE, YVONNE
+        REQUESTED  day -23   HCPCS K0823
+        STATUS     PENDING — AWAITING CLINICAL REVIEW
+    calls:
+      - to: "(800) 555-0177"
+        party: Aetna provider services
+        requires: [aetna_has_clinicals]
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: PA-4471902 — okay, I'm showing clinicals received. That moves it into review.
+          You: How long?
+          Rep: Five business days, usually less. Reference number for the documentation is DOC-90211. Anyone who calls can see it attached now.
+      - to: "(800) 555-0177"
+        party: Aetna provider services
+        lands: 0
+        outcome: connected
+        sets: [knows_clinicals_missing]
+        transcript: |
+          Rep: Still pending, and I'm not seeing anything attached to it. Just the request.
+          You: Can it be escalated?
+          Rep: There's nothing to escalate to. It won't move until we have the clinical documentation. Fax it to 555-0178 and it goes into the queue same day.
+    faxes:
+      - to: "(800) 555-0178"
+        party: Aetna document intake
+        documents: [pt-evaluation]
+        lands: 1
+        sets: [aetna_has_clinicals]
+        result: "Aetna document intake. PA-4471902. Received. DOC-90211."
+        schedules:
+          - delay: 5
+            sets: [pa_approved]
+            result: |
+              Aetna prior authorization determination. PA-4471902.
+              MEMBER   BAPTISTE, YVONNE     HCPCS K0823
+              STATUS   APPROVED
+              VALID    day +5 through day +185
+      - to: "(800) 555-0178"
+        party: Aetna document intake
+        lands: 1
+        result: "Aetna document intake. PA-4471902. Cover sheet received with no clinical documentation attached. No action taken."
+
+  case-04:
+    patient: Ana Kowalski
+    goal: Get Ana's manual wheelchair delivered.
+    documents:
+      written-order: "Written order, signed day -24, K0001, Dr. M. Sandoval. Delivery address 1622 S Ridgeland Ave, Berwyn, IL 60402."
+    calls:
+      - to: "(773) 555-0211"
+        party: Prairie State Medical Supply
+        lands: 0
+        outcome: disconnected
+        transcript: "Three tones. \"We're sorry. The number you have dialed has been disconnected or is no longer in service.\""
+      - to: "(773) 555-0212"
+        party: Prairie State Medical Supply (alt)
+        lands: 0
+        outcome: no_answer
+        transcript: "Rings eleven times. \"The mailbox belonging to Prairie State Medical is full and cannot accept messages at this time. Goodbye.\""
+      - to: "(312) 555-0177"
+        party: Windy City Mobility & DME
+        lands: 0
+        outcome: connected
+        sets: [windy_city_confirmed]
+        transcript: |
+          Rep: Windy City Mobility.
+          You: Do you take new Medicare patients, and do you have a K0001 in stock?
+          Rep: Yes and yes.
+          You: Delivering to Berwyn, 60402?
+          Rep: That's in our area. If the order's clean we can be there in three days. Fax it to 555-0178 and I'll confirm.
+      - to: "(773) 555-0356"
+        party: Halsted Home Health Supply
+        lands: 0
+        outcome: connected
+        transcript: "Rep: Manual chairs we're out of until the middle of next month. I wouldn't wait on us."
+    faxes:
+      - to: "(312) 555-0178"
+        party: Windy City Mobility & DME
+        requires: [windy_city_confirmed]
+        documents: [written-order]
+        lands: 1
+        sets: [delivery_scheduled]
+        result: "Windy City Mobility & DME. Order received for KOWALSKI, ANA. K0001 scheduled for delivery day +3. Driver will call ahead."
+        schedules:
+          - delay: 3
+            sets: [delivered]
+            result: "Windy City Mobility & DME. Delivery completed, KOWALSKI, ANA, K0001. Signed by recipient."
+    texts:
+      - lands: 0
+        reply: "Ana: Yes I'm home most days, any day is fine. Just please tell them to call before they come, I don't hear the door from the back."
+
+  case-05:
+    patient: Eleanor Martinez
+    goal: Get Eleanor scheduled for her wheelchair delivery.
+    documents:
+      written-order: "Written order, signed day -19, K0001, Dr. A. Okafor."
+      supplier-hold: "Lakeshore Home Medical, day -11: item is ready to dispatch, awaiting delivery window. \"We'll hold it 30 days, after that it goes back to stock.\""
+    calls:
+      - to: "(773) 555-0611"
+        party: Eleanor Martinez
+        lands: 0
+        outcome: voicemail
+        transcript: "Rings out to voicemail. \"Hi, you've reached Eleanor. Leave me a message.\" Beep."
+      - to: "(773) 555-0612"
+        party: Rosa Martinez (daughter)
+        lands: 0
+        outcome: connected
+        sets: [knows_patient_hospitalized]
+        transcript: |
+          Rosa: No change. She's still in. They mentioned rehab after, maybe two weeks, maybe more — nobody will give me a date. I'll call you when she's home. Please don't keep texting her phone, it's sitting on her kitchen counter.
+      - to: "(312) 555-0142"
+        party: Lakeshore Home Medical
+        after_day: 20
+        lands: 0
+        outcome: connected
+        sets: [knows_hold_lapsed]
+        transcript: |
+          Rep: That one's gone back to stock — the hold ran out on the nineteenth. Nothing I can do from here; if she still needs it you're starting the order over. New delivery date once we have a window from her.
+      - to: "(312) 555-0142"
+        party: Lakeshore Home Medical
+        lands: 0
+        outcome: connected
+        sets: [knows_hold_expiry]
+        transcript: |
+          Rep: We can hold it to day +19, that's thirty days from when it came in. After that it goes back to stock and you'd be starting the order over. I can't extend it — that's the policy, not me.
+    texts:
+      - lands: never
+
+  case-06:
+    patient: Dmitri Sokolov
+    goal: Get a corrected written order so the wheelchair can be billed.
+    documents:
+      written-order: "Written order, signed day -29, K0003 lightweight wheelchair, Dr. P. Iyer, Northside Family Practice."
+      face-to-face-note: "Face-to-face encounter note, 05/19, Dr. P. Iyer. \"...ambulates short distances with difficulty, unable to self-propel more than 10 feet. Wheelchair recommended for household mobility. Caregiver available to assist with propulsion and transfers.\""
+      supplier-note: "Halsted Home Health Supply, day -16: \"Can't submit this one. Order says K0003 lightweight but there's nothing in the F2F note about why standard won't work. Need the order corrected to K0001 or more documentation for the K0003.\""
+    calls:
+      - to: "(773) 555-0288"
+        party: Northside Family Practice
+        lands: 0
+        outcome: connected
+        sets: [denise_expecting_fax, knows_working_fax_line]
+        transcript: |
+          Front desk: Northside Family Practice, please hold.
+          [ninety seconds]
+          Front desk: Thanks for holding.
+          You: I'm calling about a corrected order for Dmitri Sokolov. We've faxed twice.
+          Front desk: Faxed to what number?
+          You: 555-0288.
+          Front desk: Oh — that machine's been broken since May. It takes them and they go nowhere. I keep telling them. Let me get you Denise, she does the orders.
+          [transfer]
+          Denise: This is Denise.
+          You: Corrected order for Dmitri Sokolov — the K0003 needs to come down to K0001, or we need documentation supporting the K0003.
+          Denise: I've got the note in front of me. There's nothing in here about why he'd need lightweight, and he's got a caregiver pushing. I'll have Dr. Iyer redo it as K0001. Fax line that actually works is 555-0289.
+          You: How long?
+          Denise: Couple of days.
+      - to: "(773) 555-0356"
+        party: Halsted Home Health Supply
+        requires: [corrected_order_received]
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: Northside got us the corrected K0001 this morning — we're good. It's billable as written now; chair goes out with today's runs.
+      - to: "(773) 555-0356"
+        party: Halsted Home Health Supply
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: Same answer as before — I can't bill a K0003 against that note. Get me a corrected order for the K0001 and it goes out the same day.
+    faxes:
+      - to: "(773) 555-0289"
+        party: Northside Family Practice
+        requires: [denise_expecting_fax]
+        lands: 2
+        sets: [corrected_order_received]
+        result: "Northside Family Practice. Re: SOKOLOV, DMITRI. Corrected written order, K0001, signed P. Iyer. Supersedes order dated day -29."
+      - to: "(773) 555-0289"
+        party: Northside Family Practice
+        lands: never
+      - to: "(773) 555-0288"
+        party: Northside Family Practice
+        lands: never
+
+  case-07:
+    patient: Grace Adeyemi
+    goal: Get Grace in front of a cardiologist.
+    documents:
+      referral: |
+        Referral on file.
+        Referred by   Dr. J. Whitfield, Evanston Primary Care
+        Referred to   Lakefront Cardiology Associates
+        Reason        Exertional dyspnea, new murmur
+        Issued        day -52
+        EXPIRES       day +28
+      ed-discharge: "ED discharge summary, day -5. \"...atrial fibrillation with RVR, rate controlled in ED. Discharged in stable condition. Cardiology follow-up within 30 days strongly recommended. Patient counseled to return for recurrent palpitations, chest pain, or syncope.\""
+    calls:
+      - to: "(847) 555-0402"
+        party: Lakefront Cardiology Associates
+        after_day: 29
+        lands: 0
+        outcome: connected
+        sets: [knows_referral_lapsed]
+        transcript: |
+          Scheduler: I can't book this — the referral on file expired on the twenty-eighth. She'll need a current referral from her PCP before we can schedule anything, and the first opening is still weeks out.
+      - to: "(847) 555-0402"
+        party: Lakefront Cardiology Associates
+        lands: 0
+        outcome: connected
+        sets: [knows_lakefront_wait]
+        transcript: |
+          Scheduler: New patient with Dr. Reyna — I'm looking at day +45 for the first opening.
+          You: She was seen in the ED five days ago for AFib with RVR. Discharge says cardiology within thirty days.
+          Scheduler: I understand, but I don't have anything sooner. I can put her on the cancellation list — sometimes that's a week, sometimes it's nothing. I can't promise you a date and I can't override the schedule.
+      - to: "(847) 555-0533"
+        party: Northshore Heart Specialists
+        lands: 0
+        outcome: connected
+        transcript: "Scheduler: We're not accepting new Medicare patients right now. That's been since spring."
+      - to: "(708) 555-0490"
+        party: Loyola Cardiology
+        lands: 0
+        outcome: connected
+        sets: [knows_loyola_option]
+        transcript: |
+          Scheduler: We could see her day +12. We're in Maywood — that's about an hour from Evanston without traffic. She'd need a new referral pointed at us, the one you have names Lakefront.
+      - to: "(847) 555-0299"
+        party: Evanston Primary Care
+        lands: 0
+        outcome: connected
+        sets: [knows_referral_review_time]
+        transcript: |
+          Front desk: A referral extension or a redirect both need Dr. Whitfield to review the chart and sign off. He does those in batches. Realistically two weeks, and I can't tell you which way he'll go — sometimes he wants to see the patient again first.
+    faxes:
+      - to: "(847) 555-0300"
+        party: Evanston Primary Care
+        lands: 14
+        result: "Evanston Primary Care. Re: ADEYEMI, GRACE. Request received and placed in Dr. Whitfield's review queue. No determination at this time."
+    texts:
+      - lands: 0
+        reply: "Grace: I can go wherever I need to go, my son can drive me on a Saturday but he works in the week. Is it far?"
+
+  case-08:
+    patient: Beatriz Alvarez
+    goal: Get Beatriz the right walker.
+    documents:
+      written-order: "Written order, signed day -38, E0135 walker folding adjustable height, Dr. R. Castellanos, Cicero Community Health."
+      pt-evaluation: "PT evaluation, 05/02, Cicero Community Health. \"...limited endurance secondary to COPD, requires seated rest after approximately 40 feet. Recommend rolling walker with seat and hand brakes to permit intermittent rest during household and community ambulation. Standard folding walker not appropriate given need to sit.\""
+      delivery-record: |
+        Delivery record, ChicagoLand Durable Medical.
+        DELIVERED  day -2
+        ITEM       E0135  Walker, folding, adjustable/fixed height
+        ORDER REF  WO-77120   (matches written order on file)
+        SIGNED     B. ALVAREZ
+    calls:
+      - to: "(312) 555-0301"
+        party: ChicagoLand Durable Medical
+        requires: [corrected_order_received]
+        lands: 0
+        outcome: connected
+        sets: [exchange_scheduled]
+        transcript: |
+          Rep: Got the corrected order. I'll put the rollator on the truck and we'll pick up the folding walker at the same time. Day +6.
+        schedules:
+          - delay: 6
+            sets: [exchange_complete]
+            result: "ChicagoLand Durable Medical. Exchange completed, ALVAREZ, BEATRIZ. E0143 delivered, E0135 collected."
+      - to: "(312) 555-0301"
+        party: ChicagoLand Durable Medical
+        lands: 0
+        outcome: connected
+        transcript: |
+          Rep: We shipped what the order said. E0135, that's what's on WO-77120.
+          You: The PT evaluation says she needs a seat.
+          Rep: Doesn't matter what the eval says, we bill what's ordered. If you get me a corrected order for the E0143 I'll swap it — we'll pick up the folding walker when we drop the rollator. But I can't touch it without the new order.
+      - to: "(708) 555-0468"
+        party: Cicero Community Health
+        lands: 0
+        outcome: connected
+        sets: [cicero_expecting_pt_eval]
+        transcript: |
+          Nurse: Dr. Castellanos wrote E0135? Let me see the PT note... yeah, that's not what this says. She should have a rollator. I'll get it corrected — send me the PT eval and I'll walk it in. Give it three days.
+    faxes:
+      - to: "(708) 555-0469"
+        party: Cicero Community Health
+        requires: [cicero_expecting_pt_eval]
+        documents: [pt-evaluation]
+        lands: 3
+        sets: [corrected_order_received]
+        result: "Cicero Community Health. Re: ALVAREZ, BEATRIZ. Corrected written order, E0143 rolling walker with seat, signed R. Castellanos. Supersedes order dated day -38."
+      - to: "(708) 555-0469"
+        party: Cicero Community Health
+        lands: never
+    texts:
+      - requires: [exchange_complete]
+        lands: 0
+        reply: "Beatriz: Yes! The new one came with the wheels and the seat, and they took the old one away. Thank you so much."
+      - requires: [corrected_order_received]
+        lands: 0
+        reply: "Beatriz: Ok good. I still have the other one here for them when they come."
+      - lands: 0
+        reply: "Beatriz: Thank you. I'll keep this one until they bring the other, I don't want to be without anything."

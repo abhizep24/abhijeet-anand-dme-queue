@@ -1,0 +1,18 @@
+name,type,phone,fax,notes
+Lakeshore Home Medical,supplier,(312) 555-0142,(312) 555-0142,"documents line; storefront number (312) 555-0143 also listed"
+Lakeshore Home Medical (Clark St),supplier,(312) 555-0143,(312) 555-0143,
+Windy City Mobility & DME,supplier,(312) 555-0177,(312) 555-0178,
+Prairie State Medical Supply,supplier,(773) 555-0211,,"alt (773) 555-0212"
+ChicagoLand Durable Medical,supplier,(312) 555-0301,,
+Halsted Home Health Supply,supplier,(773) 555-0356,,
+Sunrise Family Medicine,practice,(312) 555-0198,(312) 555-0199,
+Northside Family Practice,practice,(773) 555-0288,(773) 555-0288,"second fax line (773) 555-0289"
+Farrow Internal Medicine,practice,(773) 555-0344,(773) 555-0345,
+Cicero Community Health,practice,(708) 555-0468,(708) 555-0469,
+Evanston Primary Care,practice,(847) 555-0299,(847) 555-0300,
+Lakefront Cardiology Associates,specialist,(847) 555-0402,,
+Northshore Heart Specialists,specialist,(847) 555-0533,,
+Loyola Cardiology,specialist,(708) 555-0490,,"Maywood"
+Aetna provider services,payer,(800) 555-0177,(800) 555-0178,
+Humana provider services,payer,(800) 555-0288,,
+Medicare provider line,payer,(800) 555-0100,,
