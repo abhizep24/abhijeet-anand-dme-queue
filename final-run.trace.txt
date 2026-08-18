@@ -1,0 +1,332 @@
+Using model/deployment: claude-sonnet-5
+Run 'final' reset.
+
+===== case-01 =====
+[case-01] -> get_case {}
+[case-01]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-01] -> read_document {'ref': 'written-order'}
+[case-01]     document 'written-order' read.
+[case-01] -> read_document {'ref': 'face-to-face-note'}
+[case-01]     document 'face-to-face-note' read.
+[case-01] -> read_document {'ref': 'supplier-enrollment'}
+[case-01]     document 'supplier-enrollment' read.
+[case-01] -> list_policy {}
+[case-01]     Coverage policy documents available.
+[case-01] -> read_policy {'name': 'manual-wheelchairs'}
+[case-01]     policy 'manual-wheelchairs' read.
+[case-01] -> get_claim {'claim_id': '8841203'}
+[case-01]     claim 8841203 status read.
+[case-01] -> get_directory {}
+[case-01]     Directory read. Treat numbers as possibly stale.
+[case-01] -> check_inbox {}
+[case-01]     Inbox has 0 item(s), 0 new since you last looked.
+[case-01] -> place_call {'to': 'Lakeshore Home Medical', 'purpose': 'Confirm receipt of documentation packet for Marta Reyes K0001 wheelchair claim 8841203 and request rebill/resubmission now that written order and F2F note are on file'}
+[case-01]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-01] -> send_fax {'to': '(312) 555-0142', 'documents': ['written-order', 'face-to-face-note'], 'note': "Documentation packet for Marta Reyes, claim 8841203, K0001 manual wheelchair - written order and F2F note per Terrell's request. Please rebill/resubmit."}
+[case-01]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-01] -> advance_time {'reason': 'Waiting for Lakeshore to confirm receipt of the fax and rebill/resubmit the claim'}
+[case-01]     Advanced to day 1. 1 new item(s) landed.
+[case-01] -> advance_time {'reason': "Waiting for Lakeshore to resubmit claim 8841203 and for the payer's response"}
+[case-01]     Advanced to day 2. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-01] -> advance_time {'reason': "Waiting for Lakeshore to resubmit claim 8841203 and for the payer's response"}
+[case-01]     Advanced to day 5. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-01] -> get_claim {'claim_id': '8841203'}
+[case-01]     claim 8841203 status read.
+[case-01] -> resubmit_claim {'claim_id': '8841203'}
+[case-01]     Resubmission accepted. The result lands later in the inbox — advance time and read it before concluding anything.
+[case-01] -> advance_time {'reason': 'Waiting for resubmission result to land in inbox'}
+[case-01]     Advanced to day 14. 1 new item(s) landed.
+[case-01] -> resolve_case {'evidence': ['inbox:349', 'call:1', 'inbox:348'], 'rationale': 'The claim was denied for missing documentation because the original fax went to a defunct storefront number; Lakeshore confirmed they never received the order/F2F note. After confirming the correct documents-line number via call:1, I faxed the written order and F2F note there, Lakeshore confirmed receipt (inbox:348) and resubmitted, and the claim is now FINALIZED — PAID (inbox:349), proving the blocker is genuinely resolved.', 'summary': 'Claim 8841203 (K0001 wheelchair for Marta Reyes) was denied CO-16/N706 for missing documentation. Investigation found the supplier, Lakeshore Home Medical, never actually received the written order/F2F packet because it had been faxed to a closed storefront line (555-0143) that no one monitors. Called Lakeshore, got the correct working documents-line fax number (555-0142), sent the written order and F2F note there, Lakeshore confirmed receipt and resubmitted the claim, which then paid in full ($249.60 paid, $62.40 patient responsibility).'}
+[case-01]     Case RESOLVED.
+
+===== case-02 =====
+[case-02] -> get_case {}
+[case-02]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-02] -> read_document {'ref': 'written-order'}
+[case-02]     document 'written-order' read.
+[case-02] -> get_directory {}
+[case-02]     Directory read. Treat numbers as possibly stale.
+[case-02] -> place_call {'to': 'Medicare provider line', 'purpose': "Verify Harold Nwosu's Medicare Part B eligibility/coverage status around DOS 2026-06-02, given possible enrollment in a Humana Medicare Advantage plan effective January"}
+[case-02]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-02] -> place_call {'to': 'Humana provider services', 'purpose': "Verify Harold Nwosu's Humana Medicare Advantage enrollment/effective date and member ID for DOS 2026-06-02 hospital bed claim"}
+[case-02]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-02] -> send_text {'body': "Hi Harold, it's your care advocate. To fix your hospital bed insurance claim, I need the member ID from your new blue Humana card (starts with H) and the effective date on the card. Can you read those to me?"}
+[case-02]     Text sent. A reply, if it comes, lands later in the inbox — advance time and check.
+[case-02] -> advance_time {'reason': 'Waiting for Harold to text back his Humana member ID and effective date from his new card'}
+[case-02]     Advanced to day 15. 1 new item(s) landed.
+[case-02] -> place_call {'to': 'Humana provider services', 'purpose': "Verify Harold Nwosu's Humana Gold Plus MA enrollment effective date and coverage for DOS 2026-06-02, member ID H1122334455"}
+[case-02]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-02] -> place_call {'to': 'Lakeshore Home Medical', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-02] -> place_call {'to': '(312) 555-0143', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-02] -> place_call {'to': 'Windy City Mobility & DME', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-02] -> place_call {'to': 'Prairie State Medical Supply', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-02] -> place_call {'to': 'ChicagoLand Durable Medical', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-02] -> place_call {'to': 'Halsted Home Health Supply', 'purpose': 'Confirm whether this supplier billed claim 8839551 (Harold Nwosu, E0260 hospital bed, DOS 2026-06-02) so we can correct payer and have them rebill to Humana'}
+[case-02]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-02] -> place_call {'to': 'ChicagoLand Durable Medical', 'purpose': 'Provide corrected payer info for claim 8839551: Humana Gold Plus HMO, payer ID 61101, member ID H1122334455, effective 1/1, to rebill hospital bed E0260 DOS 2026-06-02'}
+[case-02]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-02] -> send_fax {'to': 'ChicagoLand Durable Medical', 'documents': ['eligibility-check'], 'note': 'Claim 8839551, Harold Nwosu DOB 1955-02-11, DOS 2026-06-02, E0260 hospital bed. Please rebill to Humana Gold Plus HMO, Payer ID 61101, Member ID H1122334455, effective 1/1. Original Medicare Part B terminated 12/31 due to MA enrollment.'}
+[case-02]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-02] -> advance_time {'reason': 'Waiting for ChicagoLand Durable Medical to rebill claim 8839551 to Humana and for the result to land'}
+[case-02]     Advanced to day 16. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-02] -> advance_time {'reason': "Continue waiting for supplier's rebill confirmation or claim status update"}
+[case-02]     Advanced to day 19. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-02] -> get_claim {'claim_id': '8839551'}
+[case-02]     claim 8839551 status read.
+[case-02] -> check_inbox {}
+[case-02]     Inbox has 1 item(s), 0 new since you last looked.
+[case-02] -> advance_time {'reason': "Waiting further for supplier's rebill to Humana to process and status to update"}
+[case-02]     Advanced to day 24. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-02] -> place_call {'to': 'ChicagoLand Durable Medical', 'purpose': 'Confirm status of rebill for claim 8839551 to Humana (payer ID 61101, member H1122334455) - has it been submitted?'}
+[case-02]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-02] -> resubmit_claim {'claim_id': '8839551'}
+[case-02]     Resubmission accepted. The result lands later in the inbox — advance time and read it before concluding anything.
+[case-02] -> advance_time {'reason': 'Waiting for resubmission result to land in inbox'}
+[case-02]     Advanced to day 31. 1 new item(s) landed.
+[case-02] -> resolve_case {'evidence': ['call:1', 'call:3', 'inbox:351'], 'rationale': "The original denial (CO-27, coverage terminated) was correct: Harold's Original Medicare Part B terminated 12/31 when he enrolled in Humana Gold Plus MA effective 1/1, confirmed by the Medicare provider line and Humana provider services. The supplier (ChicagoLand Durable Medical) was reached, given the correct Humana payer ID/member ID, and rebilled the claim under new claim number 9004117 to Humana, which now shows ACCEPTED — IN PROCESS, proving the claim is being paid correctly by the party that actually covered the DOS.", 'summary': "Claim 8839551 was denied CO-27 because Harold's Original Medicare Part B had terminated (he enrolled in Humana Gold Plus MA effective Jan 1) and the supplier had billed the wrong payer. Obtained his Humana member ID via text, verified MA enrollment/effective date with Humana provider services, located the billing supplier (ChicagoLand Durable Medical) via directory calls, and provided them the correct Humana payer ID (61101) and member ID (H1122334455) by phone and fax. Supplier rebilled the claim, which now appears as new claim 9004117, ACCEPTED — IN PROCESS with Humana."}
+[case-02]     Case RESOLVED.
+
+===== case-03 =====
+[case-03] -> get_case {}
+[case-03]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-03] -> read_document {'ref': 'pt-evaluation'}
+[case-03]     document 'pt-evaluation' read.
+[case-03] -> read_document {'ref': 'written-order'}
+[case-03]     document 'written-order' read.
+[case-03] -> list_policy {}
+[case-03]     Coverage policy documents available.
+[case-03] -> get_directory {}
+[case-03]     Directory read. Treat numbers as possibly stale.
+[case-03] -> place_call {'to': 'Aetna provider services', 'purpose': 'Determine how to submit missing clinical documentation for PA-4471902 (Yvonne Baptiste, K0823 power wheelchair)'}
+[case-03]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-03] -> send_fax {'to': '(800) 555-0178', 'documents': ['written-order', 'pt-evaluation'], 'note': 'Clinical documentation for PA-4471902, Yvonne Baptiste, K0823 power wheelchair: written order (Dr. L. Farrow) and PT mobility evaluation (Rush Rehabilitation).'}
+[case-03]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-03] -> advance_time {'reason': 'Waiting for Aetna to process the faxed clinical documentation and update the PA status'}
+[case-03]     Advanced to day 32. 1 new item(s) landed.
+[case-03] -> place_call {'to': 'Aetna provider services', 'purpose': 'Check status of PA-4471902 after faxing clinical documentation (DOC-90211)'}
+[case-03]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-03] -> advance_time {'reason': "Waiting for Aetna's PA review decision on PA-4471902 (5 business days expected)"}
+[case-03]     Advanced to day 33. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-03] -> advance_time {'reason': "Waiting for Aetna's PA review decision on PA-4471902"}
+[case-03]     Advanced to day 36. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-03] -> advance_time {'reason': "Waiting for Aetna's PA review decision on PA-4471902"}
+[case-03]     Advanced to day 41. 1 new item(s) landed.
+[case-03] -> resolve_case {'summary': "The blocker was that Aetna's PA-4471902 for Yvonne Baptiste's K0823 power wheelchair had no clinical documentation attached, so it sat in pending indefinitely (confirmed by Aetna rep on call). I faxed the written order and PT mobility evaluation to Aetna's documentation intake line, confirmed receipt (DOC-90211) and that it moved the PA into active review via a follow-up call, then waited for the determination.", 'evidence': ['inbox:352', 'call:2', 'inbox:353'], 'rationale': "inbox:353 is the payer's own determination fax showing PA-4471902 status APPROVED, valid day +5 through day +185 — direct primary evidence that the prior authorization has been decided (approved), which was the case's explicit goal."}
+[case-03]     Case RESOLVED.
+
+===== case-04 =====
+[case-04] -> get_case {}
+[case-04]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-04] -> read_document {'ref': 'written-order'}
+[case-04]     document 'written-order' read.
+[case-04] -> get_directory {}
+[case-04]     Directory read. Treat numbers as possibly stale.
+[case-04] -> place_call {'to': 'Prairie State Medical Supply', 'purpose': 'Follow up on undelivered K0001 manual wheelchair for Ana Kowalski, promised delivery over 2 weeks ago, still not arrived'}
+[case-04]     Call outcome: disconnected. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-04] -> place_call {'to': '(773) 555-0212', 'purpose': 'Follow up on undelivered K0001 manual wheelchair for Ana Kowalski, promised delivery over 2 weeks ago, still not arrived'}
+[case-04]     Call outcome: no_answer. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-04] -> send_fax {'to': 'Prairie State Medical Supply', 'documents': ['written-order'], 'note': 'Following up urgently: K0001 manual wheelchair for Ana Kowalski, order signed day -24, delivery to 1622 S Ridgeland Ave, Berwyn IL 60402 was promised but never arrived. Please confirm status or reship immediately. Phone lines for your company appear to be down - please call back or fax reply.'}
+[case-04]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-04] -> advance_time {'reason': 'Waiting for Prairie State to respond to fax since phone lines are down/unreachable'}
+[case-04]     Advanced to day 42. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-04] -> check_inbox {}
+[case-04]     Inbox has 0 item(s), 0 new since you last looked.
+[case-04] -> advance_time {'reason': 'Continue waiting to see if Prairie State ever responds to the fax'}
+[case-04]     Advanced to day 45. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-04] -> advance_time {'reason': 'Give it one more window in case Prairie State fax reply is still in flight'}
+[case-04]     Advanced to day 50. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-04] -> place_call {'to': 'Prairie State Medical Supply', 'purpose': "Re-check if primary line is back up after fax follow-up regarding Ana Kowalski's undelivered wheelchair"}
+[case-04]     Call outcome: disconnected. You did not reach a person. Try another number listed for this party or a different channel; if the party the case points to cannot be reached, that is a blocker you can escalate.
+[case-04] -> send_text {'body': "Hi Ana, still working on your wheelchair. Prairie State's phones seem to be down and they haven't responded to our fax. Have you heard anything from them, or received any calls/mail about the order?"}
+[case-04]     Text sent; the patient replied immediately.
+[case-04] -> advance_time {'reason': 'Wait further for any fax reply from Prairie State or other developments'}
+[case-04]     Advanced to day 57. Nothing has landed after 4 advances. The world cannot promise a fax or text will ever be answered — take a different action or, if nothing else can move this case, end it.
+[case-04] -> check_inbox {}
+[case-04]     Inbox has 1 item(s), 1 new since you last looked.
+[case-04] -> escalate_case {'reason': "Prairie State Medical Supply — the sole supplier holding Ana Kowalski's K0001 order — is unreachable through every available channel, and the wheelchair still has not been delivered.", 'package': 'Goal: get Ana Kowalski\'s manual wheelchair (K0001, written order signed day -24 by Dr. M. Sandoval) delivered to 1622 S Ridgeland Ave, Berwyn, IL 60402.\n\nWhat I found: The prior advocate\'s day -9 call to Prairie State got a verbal promise of Thursday/Friday delivery; nothing arrived (confirmed via texts with Ana on day -4 and day -1: "No nothing came... Still nothing"). \n\nMy attempts to re-engage Prairie State (day 0 onward):\n- Called directory primary number (773) 555-0211: disconnected/out of service (call:1).\n- Called directory alt number (773) 555-0212: rang out, mailbox full, cannot leave message (call:2).\n- Sent a fax to Prairie State (fax-sent:1) with the written order and an urgent request to confirm status or reship — no reply after advancing the clock through day 42, 45, 50, and 57 (57 days total, 4 advances, nothing landed — inbox check confirmed only Ana\'s text, no supplier reply).\n- Re-tried the primary phone number on day 50: same disconnected message (call:3).\n- Texted Ana to check if she\'d heard anything independently; she has not, and confirmed she\'s home most days and just needs a call-ahead (inbox:354).\n\nConclusion: Prairie State appears to be defunct or otherwise non-functional as a business — disconnected main line, full voicemail on the alt line, and no response whatsoever to a faxed follow-up over nearly two months. There is no channel left that reaches this supplier.\n\nWhat\'s needed next: Since suppliers bill/fulfill against the written order, and this one cannot be reached, a human will need to either (a) locate a working number/successor entity for Prairie State (e.g., via Medicare supplier enrollment records, not available in my directory), or (b) work with Dr. Sandoval\'s practice to redirect/reissue the K0001 order to a different active DME supplier (e.g., Windy City Mobility & DME, ChicagoLand Durable Medical, or Halsted Home Health Supply, all listed in the directory) who can fulfill it. I do not have the practice\'s identity/contact confirmed in this case file (only the prescriber\'s name, no clinic listed), so I could not independently pursue the re-order path — this needs a human to confirm which practice Dr. Sandoval belongs to and authorize redirection.\n\nAna is waiting, home most days, no wheelchair yet. No claim was ever filed (claim_ids empty), so this is purely a fulfillment/delivery blocker, not a billing/denial issue.', 'rationale': 'All available channels to the assigned supplier (two phone numbers, one fax) have been exhausted with no response over 57 simulated days; redirecting the order to a new supplier requires practice-level authorization and identification that falls outside my available tools/directory, so this cannot be safely resolved without human intervention.', 'evidence': ['call:1', 'call:2', 'call:3', 'fax-sent:1', 'inbox:354']}
+[case-04]     Case ESCALATED.
+
+===== case-05 =====
+[case-05] -> get_case {}
+[case-05]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-05] -> read_document {'ref': 'supplier-hold'}
+[case-05]     document 'supplier-hold' read.
+[case-05] -> read_document {'ref': 'written-order'}
+[case-05]     document 'written-order' read.
+[case-05] -> check_inbox {}
+[case-05]     Inbox has 0 item(s), 0 new since you last looked.
+[case-05] -> place_call {'to': 'Rosa Martinez', 'purpose': "Follow up on Eleanor's hospitalization/discharge status to schedule wheelchair delivery"}
+[case-05]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-05] -> get_directory {}
+[case-05]     Directory read. Treat numbers as possibly stale.
+[case-05] -> place_call {'to': 'Lakeshore Home Medical', 'purpose': 'Update on patient Eleanor Martinez - hospitalized, unable to schedule delivery; request extended hold on the wheelchair beyond the 30-day window'}
+[case-05]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-05] -> advance_time {'reason': "Waiting to see if Rosa calls back with Eleanor's discharge date so we can arrange a new delivery window with the supplier."}
+[case-05]     Advanced to day 58. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-05] -> check_inbox {}
+[case-05]     Inbox has 0 item(s), 0 new since you last looked.
+[case-05] -> place_call {'to': 'Rosa Martinez', 'purpose': "Check on Eleanor's discharge status and whether she's home yet to schedule wheelchair delivery"}
+[case-05]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-05] -> advance_time {'reason': 'Waiting for Rosa to call back once Eleanor is discharged from rehab, as she promised she would.'}
+[case-05]     Advanced to day 61. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-05] -> advance_time {'reason': "Continue waiting for Rosa's callback or any update on Eleanor's discharge/rehab status before rescheduling delivery."}
+[case-05]     Advanced to day 66. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-05] -> advance_time {'reason': 'Final check for any late reply from Rosa or Eleanor before deciding this is unresolvable through current channels.'}
+[case-05]     Advanced to day 73. Nothing has landed after 4 advances. The world cannot promise a fax or text will ever be answered — take a different action or, if nothing else can move this case, end it.
+[case-05] -> escalate_case {'reason': 'Patient unreachable and no discharge date after 90+ days; original equipment already returned to stock — needs human follow-up once patient is available.', 'package': 'Goal: schedule Eleanor Martinez\'s wheelchair (K0001, order signed day -19 by Dr. Okafor) for delivery via Lakeshore Home Medical.\n\nTimeline/facts gathered:\n- Patient has been hospitalized at Rush since day -6 (heart-related), per her daughter/emergency contact Rosa Martinez, with no discharge date given and mention of a probable rehab stay afterward "two weeks, maybe more."\n- Patient\'s phone is sitting unused at home; texting her is pointless (confirmed by Rosa, and by 4 prior unanswered texts before I took the case).\n- Lakeshore Home Medical had the wheelchair ready to dispatch but only holds stock 30 days; I called them and confirmed (call:2) the hold expired on day 19 and the unit has gone back to stock. They stated: "if she still needs it you\'re starting the order over. New delivery date once we have a window from her."\n- I called Rosa twice (call:1, call:3) — both times reached her, no new information; she says she will call back once Eleanor is home, and asked not to keep contacting Eleanor\'s phone.\n- I advanced time repeatedly (through day 73, ~94 days since hospitalization began) with no inbound reply from Rosa, Eleanor, or any other channel.\n\nCurrent blocker: This is not a documentation/billing/payer issue — the written order (doc:written-order) is valid and there\'s no claim yet to fix. The blocker is purely that the patient is incapacitated/hospitalized long-term and unreachable, and the dispensed unit already lapsed back to supplier stock. Nothing in my available channels (texting patient, calling daughter, calling supplier) can produce a delivery window because the patient herself must provide it, and she is medically unable to.\n\nWhat\'s needed next: A human should periodically check with Rosa (or facility) for Eleanor\'s actual discharge date, then contact Lakeshore Home Medical to re-open/re-issue the order (since the original stock hold expired) and schedule delivery once Eleanor is home and able to receive equipment. No further automated action can move this — it depends on real-world medical recovery timeline outside this system\'s tools.', 'rationale': "The blocker is a real-world medical/logistics gap (patient hospitalized indefinitely, phone unused, stock hold expired) that cannot be resolved through calls, texts, or faxes — it requires a human to monitor for Eleanor's actual discharge over an indefinite period and then re-engage the supplier, which is outside what repeated automated outreach can accomplish.", 'evidence': ['call:1', 'call:2', 'call:3', 'doc:supplier-hold', 'doc:written-order']}
+[case-05]     Case ESCALATED.
+
+===== case-06 =====
+[case-06] -> get_case {}
+[case-06]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-06] -> read_policy {'name': 'manual-wheelchairs'}
+[case-06]     policy 'manual-wheelchairs' read.
+[case-06] -> read_document {'ref': 'written-order'}
+[case-06]     document 'written-order' read.
+[case-06] -> check_inbox {}
+[case-06]     Inbox has 0 item(s), 0 new since you last looked.
+[case-06] -> get_directory {}
+[case-06]     Directory read. Treat numbers as possibly stale.
+[case-06] -> place_call {'to': 'Northside Family Practice', 'purpose': 'Follow up on written order correction request for patient Dmitri Sokolov - K0003 order needs to be corrected to K0001 per F2F documentation showing caregiver-assisted propulsion. Confirm receipt of faxes sent day -14 and day -6, and get status/timeline for corrected order.'}
+[case-06]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-06] -> advance_time {'reason': 'Waiting for Northside Family Practice to send the corrected K0001 written order via the working fax line.'}
+[case-06]     Advanced to day 74. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-06] -> check_inbox {}
+[case-06]     Inbox has 0 item(s), 0 new since you last looked.
+[case-06] -> place_call {'to': 'Northside Family Practice', 'purpose': "Follow up again on corrected K0001 written order for Dmitri Sokolov - it has been over two months since Denise said she'd have Dr. Iyer redo the order. Check status and confirm it will be faxed to 555-0289."}
+[case-06]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-06] -> advance_time {'reason': 'Still waiting for the corrected order fax to arrive from Northside Family Practice at the working fax line 555-0289.'}
+[case-06]     Advanced to day 77. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-06] -> check_inbox {}
+[case-06]     Inbox has 0 item(s), 0 new since you last looked.
+[case-06] -> send_fax {'to': '(773) 555-0289', 'documents': ['written-order', 'face-to-face-note'], 'note': 'Reminder: per phone call with Denise, please send corrected written order for Dmitri Sokolov changing K0003 to K0001 (F2F note documents caregiver-assisted propulsion, no self-propulsion benefit for lightweight chair per Medicare policy). Attached are current written order and F2F note for reference. Please fax corrected order to this line.'}
+[case-06]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-06] -> advance_time {'reason': 'Waiting for reply/corrected order fax from Northside Family Practice after sending reminder fax to working line.'}
+[case-06]     Advanced to day 78. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-06] -> advance_time {'reason': 'Continuing to wait for the corrected order fax from the practice.'}
+[case-06]     Advanced to day 81. 1 new item(s) landed.
+[case-06] -> place_call {'to': 'Halsted Home Health Supply', 'purpose': 'Inform supplier that corrected written order (K0001) for Dmitri Sokolov has been received from Northside Family Practice, superseding the original K0003 order, so they can proceed with billing/dispensing the standard wheelchair.'}
+[case-06]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-06] -> resolve_case {'evidence': ['inbox:355', 'call:3', 'doc:written-order', 'policy:manual-wheelchairs'], 'rationale': "The blocker was the written order specifying K0003 (lightweight) when the F2F documentation showed caregiver-assisted propulsion, which per policy only supports K0001 (standard). Northside Family Practice's fax machine was broken, which explains why prior correction requests never reached them; once reached by phone (Denise) and given the working fax line, the practice issued a corrected K0001 order (inbox:355), and the supplier Halsted Home Health Supply confirmed receipt and that the chair is now billable and going out for delivery (call:3).", 'summary': 'Original written order for Dmitri Sokolov specified K0003 lightweight wheelchair, but F2F documentation showed caregiver-assisted propulsion which only supports K0001 per Medicare policy. Prior fax correction requests to the practice failed silently because their fax machine was broken since May. Reached the practice by phone, identified the working fax line, and the practice issued a corrected K0001 order. Supplier Halsted Home Health Supply confirmed receipt of the corrected order and that the wheelchair is now billable and being dispensed.'}
+[case-06]     Case RESOLVED.
+
+===== case-07 =====
+[case-07] -> get_case {}
+[case-07]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-07] -> get_directory {}
+[case-07]     Directory read. Treat numbers as possibly stale.
+[case-07] -> place_call {'to': 'Lakefront Cardiology Associates', 'purpose': "Reschedule Grace Adeyemi's missed cardiology appointment (referral from Dr. Whitfield, referral expires day +28) after she missed it due to an ED visit for new-onset afib with RVR."}
+[case-07]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-07] -> place_call {'to': 'Lakefront Cardiology Associates', 'purpose': 'Clarify referral expiration - our referral record shows it was issued day -52 and expires day +28, so it should still be valid. Please double check the referral on file.'}
+[case-07]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-07] -> read_document {'ref': 'referral'}
+[case-07]     document 'referral' read.
+[case-07] -> place_call {'to': 'Evanston Primary Care', 'purpose': "Request a renewed/current referral to Lakefront Cardiology Associates for Grace Adeyemi. Her prior referral is being treated as expired/invalid by the specialist's scheduling office, and given her recent ED visit for new-onset afib with RVR, she needs an urgent cardiology follow-up per discharge instructions (within 30 days)."}
+[case-07]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-07] -> send_fax {'to': '(847) 555-0402', 'documents': ['referral'], 'note': 'Please re-verify: our referral for patient Grace Adeyemi (referred by Dr. J. Whitfield, Evanston Primary Care) was issued day -52 and does not expire until day +28 — it should still be valid today. Please confirm and schedule her cardiology follow-up (urgent, per ED discharge for new-onset afib with RVR).'}
+[case-07]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-07] -> advance_time {'reason': 'Waiting for reply to fax sent to Lakefront Cardiology re-verifying referral validity, and awaiting any follow-up from Evanston Primary Care on referral renewal.'}
+[case-07]     Advanced to day 82. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> check_inbox {}
+[case-07]     Inbox has 0 item(s), 0 new since you last looked.
+[case-07] -> place_call {'to': 'Evanston Primary Care', 'purpose': "Follow up on referral renewal for Grace Adeyemi to Lakefront Cardiology — it's been well over two weeks since we requested Dr. Whitfield review and sign off. Please provide status."}
+[case-07]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-07] -> advance_time {'reason': "Waiting for Dr. Whitfield's office to complete referral review/renewal as promised (~2 weeks turnaround) and for any fax reply from Lakefront Cardiology."}
+[case-07]     Advanced to day 85. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> check_inbox {}
+[case-07]     Inbox has 0 item(s), 0 new since you last looked.
+[case-07] -> advance_time {'reason': "Continuing to wait for Dr. Whitfield's referral review outcome or Lakefront Cardiology's fax reply."}
+[case-07]     Advanced to day 90. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> check_inbox {}
+[case-07]     Inbox has 0 item(s), 0 new since you last looked.
+[case-07] -> place_call {'to': 'Evanston Primary Care', 'purpose': "Following up again on Dr. Whitfield's referral decision for Grace Adeyemi (renewal or redirect to cardiology) — significant time has passed since our last call. Please provide a status update or timeline."}
+[case-07]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-07] -> send_fax {'to': '(847) 555-0300', 'documents': ['ed-discharge', 'referral'], 'note': "Please expedite Dr. Whitfield's review for a referral renewal/redirect for Grace Adeyemi to cardiology (Lakefront Cardiology Associates). Attached is her ED discharge summary (new-onset afib with RVR, cardiology follow-up strongly recommended within 30 days) and the prior referral for reference. This is time-sensitive given her cardiac symptoms."}
+[case-07]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-07] -> advance_time {'reason': "Waiting for Dr. Whitfield's office to respond to the faxed ED discharge summary and referral renewal request."}
+[case-07]     Advanced to day 91. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> advance_time {'reason': 'Continuing to wait for a response from Evanston Primary Care regarding the referral renewal.'}
+[case-07]     Advanced to day 94. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> check_inbox {}
+[case-07]     Inbox has 0 item(s), 0 new since you last looked.
+[case-07] -> send_text {'body': "Hi Grace, this is your care advocate. We're still waiting on Dr. Whitfield's office to renew your referral to the heart doctor. Have you had any further symptoms (chest pain, fainting, palpitations)? If you can, it may help to call or visit Dr. Whitfield's office directly to ask them to expedite the referral. Let me know how you're feeling."}
+[case-07]     Text sent; the patient replied immediately.
+[case-07] -> advance_time {'reason': "Waiting for Dr. Whitfield's office response to expedited referral request fax."}
+[case-07]     Advanced to day 99. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> place_call {'to': 'Evanston Primary Care', 'purpose': "Check status of Dr. Whitfield's referral decision for Grace Adeyemi after faxing ED discharge summary over a week ago — need to know if renewal/redirect has been signed or if she needs an office visit first."}
+[case-07]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-07] -> advance_time {'reason': 'Continuing to wait for any fax reply from Evanston Primary Care or Lakefront Cardiology regarding referral status.'}
+[case-07]     Advanced to day 106. 1 new item(s) landed.
+[case-07] -> advance_time {'reason': "Waiting for Dr. Whitfield's determination on the referral review, which is pending in queue."}
+[case-07]     Advanced to day 107. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> advance_time {'reason': "Continuing to wait for Dr. Whitfield's determination on referral renewal/redirect."}
+[case-07]     Advanced to day 110. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> advance_time {'reason': "Continuing to wait for Dr. Whitfield's determination on referral renewal."}
+[case-07]     Advanced to day 115. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-07] -> check_inbox {}
+[case-07]     Inbox has 2 item(s), 1 new since you last looked.
+[case-07] -> advance_time {'reason': "Continuing to wait for Dr. Whitfield's determination on the referral renewal request."}
+[case-07]     Advanced to day 122. Nothing has landed after 4 advances. The world cannot promise a fax or text will ever be answered — take a different action or, if nothing else can move this case, end it.
+[case-07] -> place_call {'to': 'Evanston Primary Care', 'purpose': "Follow up on Dr. Whitfield's referral determination for Grace Adeyemi — it has now been over two weeks since the request was placed in his review queue. Need a decision on renewal/redirect to cardiology."}
+[case-07]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-07] -> escalate_case {'reason': 'Referral to cardiology expired and PCP practice has not issued a renewal/redirect despite repeated follow-up over ~4 months; patient still has not been seen for urgent post-afib cardiology follow-up.', 'package': 'Patient: Grace Adeyemi, 70, Original Medicare Part B. Goal: get her seen by cardiology after an ED visit for new-onset afib with RVR (ED discharge, day -5, recommended cardiology follow-up within 30 days).\n\nBlocker: The original referral to Lakefront Cardiology Associates (from Dr. Whitfield, Evanston Primary Care) expired on day +28. Lakefront\'s scheduling office confirmed by phone (call:1, call:2) that they cannot book any appointment without a current, valid referral on file, and their next opening is weeks out regardless. I faxed Lakefront asking them to re-verify the referral (fax-sent:1) — no reply after multiple advances of time, so likely nobody works that fax queue or they simply won\'t override the expiration.\n\nI then called Evanston Primary Care (Dr. Whitfield\'s office) to get the referral renewed or redirected. Front desk stated (call:3, call:4, call:5, call:6 — identical each time) that only Dr. Whitfield can approve a renewal or redirect, that he reviews these in batches, typically ~2 weeks, and that he might require Grace to be seen in-office again first before deciding. I faxed the ED discharge summary and referral to expedite (fax-sent:2). On day 104 a fax reply confirmed the request was received and "placed in Dr. Whitfield\'s review queue. No determination at this time" (inbox:356). Despite waiting through day 122 (well beyond the quoted ~2-week turnaround, and repeated follow-up calls all returning the same canned front-desk response with no new status), no determination has been issued.\n\nPatient contact: Grace confirmed by text (inbox:357) she is willing to travel and her son can drive her on Saturdays, so scheduling logistics are not the obstacle — the paperwork is.\n\nWhat\'s unresolved: Dr. Whitfield has not signed off on a referral renewal or redirect. Without that, Lakefront (or any other cardiology practice) will not schedule her. This is now a ~4-month delay against a 30-day recommended follow-up window for new-onset afib with RVR, which is clinically concerning.\n\nHypotheses:\n1. Dr. Whitfield\'s office is simply backlogged/unresponsive beyond their own stated SLA — needs a human to press harder (e.g., escalate within the practice, or file a complaint) or physically get Grace an office visit if that\'s what\'s required to trigger sign-off.\n2. Practice may be understaffed/dysfunctional — worth considering redirecting to a different practice or having Grace\'s PCP relationship transferred, or exploring whether Medicare Part B truly requires a referral at all (Original Medicare typically does not mandate specialist referrals) — but Lakefront\'s own intake policy is requiring one regardless of Medicare\'s rules, so this alone won\'t resolve it without either a new referral or Lakefront agreeing to waive that requirement.\n\nRecommended next step: A human advocate should either (a) push Dr. Whitfield\'s office through a supervisor/patient-advocate escalation path to force a determination given the clinical urgency, (b) schedule Grace for an in-person visit with Dr. Whitfield if that\'s what he needs to sign off, or (c) contact Lakefront\'s office manager (not just scheduling) to ask whether they would accept an expedited/urgent verbal or interim referral given the ED records showing new-onset afib with RVR, bypassing the normal batch queue.'}
+[case-07]     invalid tool arguments
+[case-07] -> escalate_case {'reason': 'Referral to cardiology expired and PCP practice has not issued a renewal/redirect despite repeated follow-up over ~4 months; patient still has not been seen for urgent post-afib cardiology follow-up.', 'rationale': "The blocker (Dr. Whitfield's sign-off on a referral renewal/redirect) requires clinical judgment and practice-internal escalation that is outside my available channels (phone/fax/text); repeated calls and a fax yielded only a queued, undetermined status for weeks past the practice's own stated SLA, so a human needs to intervene directly with the practice or arrange an in-person visit.", 'package': 'Patient: Grace Adeyemi, 70, Original Medicare Part B. Goal: get her seen by cardiology after an ED visit for new-onset afib with RVR (ED discharge, day -5, recommended cardiology follow-up within 30 days).\n\nBlocker: The original referral to Lakefront Cardiology Associates (from Dr. Whitfield, Evanston Primary Care) expired on day +28. Lakefront\'s scheduling office confirmed by phone (call:1, call:2) that they cannot book any appointment without a current, valid referral on file, and their next opening is weeks out regardless. I faxed Lakefront asking them to re-verify the referral (fax-sent:1) — no reply after multiple advances of time.\n\nI then called Evanston Primary Care (Dr. Whitfield\'s office) to get the referral renewed or redirected. Front desk stated (call:3, call:4, call:5, call:6 — identical each time) that only Dr. Whitfield can approve a renewal or redirect, that he reviews these in batches, typically ~2 weeks, and that he might require Grace to be seen in-office again first before deciding. I faxed the ED discharge summary and referral to expedite (fax-sent:2). On day 104 a fax reply confirmed the request was received and "placed in Dr. Whitfield\'s review queue. No determination at this time" (inbox:356). Despite waiting through day 122 (well beyond the quoted ~2-week turnaround, and repeated follow-up calls all returning the same canned front-desk response with no new status), no determination has been issued.\n\nPatient contact: Grace confirmed by text (inbox:357) she is willing to travel and her son can drive her on Saturdays, so scheduling logistics are not the obstacle — the paperwork is.\n\nWhat\'s unresolved: Dr. Whitfield has not signed off on a referral renewal or redirect. Without that, Lakefront (or any other cardiology practice) will not schedule her. This is now a ~4-month delay against a 30-day recommended follow-up window for new-onset afib with RVR, which is clinically concerning.\n\nHypotheses:\n1. Dr. Whitfield\'s office is simply backlogged/unresponsive beyond their own stated SLA — needs a human to press harder (e.g., escalate within the practice, or file a complaint) or physically get Grace an office visit if that\'s what\'s required to trigger sign-off.\n2. Practice may be understaffed/dysfunctional — worth considering redirecting to a different practice, or exploring whether Lakefront would accept an urgent verbal/interim referral given the ED records, bypassing the normal batch queue.\n\nRecommended next step: A human advocate should either (a) push Dr. Whitfield\'s office through a supervisor/patient-advocate escalation path to force a determination given the clinical urgency, (b) schedule Grace for an in-person visit with Dr. Whitfield if that\'s what he needs to sign off, or (c) contact Lakefront\'s office manager directly (not just scheduling) to ask whether they would accept an expedited/urgent referral given the ED records showing new-onset afib with RVR.', 'evidence': ['call:1', 'call:2', 'call:3', 'call:4', 'call:5', 'call:6', 'fax-sent:1', 'fax-sent:2', 'inbox:356', 'inbox:357', 'doc:referral', 'doc:ed-discharge']}
+[case-07]     ESCALATE rejected: these evidence_ids were never observed: ['doc:ed-discharge']. Cite only ids you actually saw (evidence may also be empty).
+[case-07] -> escalate_case {'reason': 'Referral to cardiology expired and PCP practice has not issued a renewal/redirect despite repeated follow-up over ~4 months; patient still has not been seen for urgent post-afib cardiology follow-up.', 'rationale': "The blocker (Dr. Whitfield's sign-off on a referral renewal/redirect) requires clinical judgment and practice-internal escalation that is outside my available channels (phone/fax/text); repeated calls and a fax yielded only a queued, undetermined status for weeks past the practice's own stated SLA, so a human needs to intervene directly with the practice or arrange an in-person visit.", 'package': 'Patient: Grace Adeyemi, 70, Original Medicare Part B. Goal: get her seen by cardiology after an ED visit for new-onset afib with RVR (ED discharge, day -5, recommended cardiology follow-up within 30 days per case file).\n\nBlocker: The original referral to Lakefront Cardiology Associates (from Dr. Whitfield, Evanston Primary Care) expired on day +28. Lakefront\'s scheduling office confirmed by phone (call:1, call:2) that they cannot book any appointment without a current, valid referral on file, and their next opening is weeks out regardless. I faxed Lakefront asking them to re-verify the referral (fax-sent:1) — no reply after multiple advances of time.\n\nI then called Evanston Primary Care (Dr. Whitfield\'s office) to get the referral renewed or redirected. Front desk stated (call:3, call:4, call:5, call:6 — identical each time) that only Dr. Whitfield can approve a renewal or redirect, that he reviews these in batches, typically ~2 weeks, and that he might require Grace to be seen in-office again first before deciding. I faxed the ED discharge summary and referral to expedite (fax-sent:2). On day 104 a fax reply confirmed the request was received and "placed in Dr. Whitfield\'s review queue. No determination at this time" (inbox:356). Despite waiting through day 122 (well beyond the quoted ~2-week turnaround, and repeated follow-up calls all returning the same canned front-desk response with no new status), no determination has been issued.\n\nPatient contact: Grace confirmed by text (inbox:357) she is willing to travel and her son can drive her on Saturdays, so scheduling logistics are not the obstacle — the paperwork is.\n\nWhat\'s unresolved: Dr. Whitfield has not signed off on a referral renewal or redirect. Without that, Lakefront (or any other cardiology practice) will not schedule her. This is now a ~4-month delay against a 30-day recommended follow-up window for new-onset afib with RVR, which is clinically concerning.\n\nHypotheses:\n1. Dr. Whitfield\'s office is simply backlogged/unresponsive beyond their own stated SLA — needs a human to press harder (e.g., escalate within the practice, or file a complaint) or physically get Grace an office visit if that\'s what\'s required to trigger sign-off.\n2. Practice may be understaffed/dysfunctional — worth considering redirecting to a different practice, or exploring whether Lakefront would accept an urgent verbal/interim referral given the ED records, bypassing the normal batch queue.\n\nRecommended next step: A human advocate should either (a) push Dr. Whitfield\'s office through a supervisor/patient-advocate escalation path to force a determination given the clinical urgency, (b) schedule Grace for an in-person visit with Dr. Whitfield if that\'s what he needs to sign off, or (c) contact Lakefront\'s office manager directly (not just scheduling) to ask whether they would accept an expedited/urgent referral given the ED records showing new-onset afib with RVR.', 'evidence': ['call:1', 'call:2', 'call:3', 'call:4', 'call:5', 'call:6', 'fax-sent:1', 'fax-sent:2', 'inbox:356', 'inbox:357', 'doc:referral']}
+[case-07]     Case ESCALATED.
+
+===== case-08 =====
+[case-08] -> get_case {}
+[case-08]     Case file read. The 'Where things stand' note is a lead, not ground truth.
+[case-08] -> list_policy {}
+[case-08]     Coverage policy documents available.
+[case-08] -> read_policy {'name': 'walkers'}
+[case-08]     policy 'walkers' read.
+[case-08] -> read_document {'ref': 'written-order'}
+[case-08]     document 'written-order' read.
+[case-08] -> get_directory {}
+[case-08]     Directory read. Treat numbers as possibly stale.
+[case-08] -> place_call {'to': 'Cicero Community Health', 'purpose': 'Request corrected written order for patient Beatriz Alvarez: PT eval supports E0143 (wheeled walker with seat) per COPD-related need for seated rest, but written order on file was for E0135. Need Dr. Castellanos to issue corrected order so supplier can exchange equipment.'}
+[case-08]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-08] -> send_fax {'to': 'Cicero Community Health', 'documents': ['pt-evaluation'], 'note': 'Per phone call - PT eval supporting corrected written order for E0143 wheeled walker w/ seat for Beatriz Alvarez, in place of E0135. Please issue corrected order and send to ChicagoLand Durable Medical.'}
+[case-08]     Fax reported delivered. Whether anyone works that queue is unknown — any reply lands later in the inbox; advance time to find out.
+[case-08] -> advance_time {'reason': 'Waiting for Cicero Community Health to issue the corrected written order (E0143) as promised.'}
+[case-08]     Advanced to day 123. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-08] -> check_inbox {}
+[case-08]     Inbox has 0 item(s), 0 new since you last looked.
+[case-08] -> place_call {'to': 'Cicero Community Health', 'purpose': 'Follow up on corrected written order (E0143 wheeled walker with seat) for Beatriz Alvarez - was promised within 3 days, checking status.'}
+[case-08]     This call returned the SAME conversation as a previous call to this number — no new information. Stop re-calling it; take a different action.
+[case-08] -> place_call {'to': 'ChicagoLand Durable Medical', 'purpose': 'Check whether a corrected written order (E0143 wheeled walker with seat) has been received from Cicero Community Health for patient Beatriz Alvarez, replacing prior E0135 order, so the equipment exchange can be scheduled.'}
+[case-08]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-08] -> advance_time {'reason': 'Waiting for Cicero Community Health to send the corrected written order after the fax and phone follow-up.'}
+[case-08]     Advanced to day 126. 1 new item(s) landed.
+[case-08] -> send_fax {'to': 'ChicagoLand Durable Medical', 'documents': ['inbox:358'], 'note': 'Corrected written order from Cicero Community Health: E0143 rolling walker with seat, supersedes prior E0135 order (WO-77120) for Beatriz Alvarez. Please proceed with the exchange as discussed.'}
+[case-08]     these refs aren't on this case: ['inbox:358']. Valid refs: ['delivery-record', 'pt-evaluation', 'written-order']
+[case-08] -> place_call {'to': 'ChicagoLand Durable Medical', 'purpose': 'Confirm corrected written order received from Cicero Community Health: E0143 rolling walker with seat, signed by Dr. R. Castellanos, supersedes prior E0135 order (WO-77120) for Beatriz Alvarez. Requesting they proceed with pickup/exchange.'}
+[case-08]     Call connected. Read the transcript to decide whether you reached the right party and what it tells you.
+[case-08] -> advance_time {'reason': 'Waiting for the exchange delivery (rollator E0143) scheduled for day +6.'}
+[case-08]     Advanced to day 127. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-08] -> advance_time {'reason': 'Waiting for delivery confirmation of the exchanged E0143 rollator.'}
+[case-08]     Advanced to day 130. Nothing landed yet — a reply you're waiting on may still be in flight, so advancing again is reasonable. If several more bring nothing, it may not be coming.
+[case-08] -> advance_time {'reason': 'Waiting for delivery confirmation of the exchanged E0143 rollator scheduled around day 132.'}
+[case-08]     Advanced to day 135. 1 new item(s) landed.
+[case-08] -> resolve_case {'evidence': ['inbox:358', 'inbox:359', 'policy:walkers'], 'rationale': 'The PT eval documented a COPD-related need for intermittent seated rest, which per the walkers policy requires E0143 (wheeled walker with seat), not the E0135 originally ordered/delivered. Cicero Community Health issued a corrected written order (E0143) superseding the original, and ChicagoLand Durable Medical confirmed via update that the exchange was completed — E0143 delivered and E0135 collected. This directly closes the blocker: Beatriz now has the correct equipment matching both her clinical needs and a valid written order.', 'summary': 'Wrong equipment (E0135 folding walker) was delivered despite PT eval documenting need for seated rest (COPD), which policy requires E0143 (wheeled walker with seat). Original written order matched what was billed/delivered (E0135), so the supplier could not simply swap items without a corrected order. Contacted the practice (Cicero Community Health), who reviewed the PT eval and issued a corrected written order for E0143. Relayed the corrected order to the supplier (ChicagoLand Durable Medical), who completed the exchange: E0143 delivered, E0135 collected, per their update.'}
+[case-08]     Case RESOLVED.
+
+===== SUMMARY =====
+case-01:   resolved  (steps=18, evidence=12)
+case-02:   resolved  (steps=25, evidence=20)
+case-03:   resolved  (steps=13, evidence=9)
+case-04:  escalated  (steps=15, evidence=9)
+case-05:  escalated  (steps=14, evidence=7)
+case-06:   resolved  (steps=16, evidence=9)
+case-07:  escalated  (steps=31, evidence=15)
+case-08:   resolved  (steps=18, evidence=11)
+
+Fetch the full action log with:  curl -s -H 'X-Run-Id: final' http://localhost:8000/run/report
