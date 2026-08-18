@@ -1,0 +1,9 @@
+services:
+  world:
+    build:
+      context: .
+      dockerfile: env/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/srv/data:ro
