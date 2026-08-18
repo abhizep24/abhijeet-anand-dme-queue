@@ -1,4 +1,4 @@
-# DME Care Advocate Agent — how to run
+# DME Care Advocate Agent
 
 A single-agent ReAct loop that works the DME queue against the mock world. One
 agent implementation handles all eight cases with no branching on `case_id`.
